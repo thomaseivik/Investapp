@@ -8,14 +8,46 @@ import { Search, TrendingUp, TrendingDown, Shield, Zap, RefreshCw, Newspaper } f
 import { testFMPConnection, fetchQuotes, fetchHistorical, formatMktCap, formatDateNO } from '../services/api'
 
 const BASE_STOCKS = [
-  { ticker: 'NVDA',  apiTicker: 'NVDA',    name: 'NVIDIA Corporation', sector: 'Teknologi' },
-  { ticker: 'AAPL',  apiTicker: 'AAPL',    name: 'Apple Inc.',         sector: 'Teknologi' },
-  { ticker: 'EQNR',  apiTicker: 'EQNR.OL', name: 'Equinor ASA',       sector: 'Energi'    },
-  { ticker: 'MOWI',  apiTicker: 'MOWI.OL', name: 'Mowi ASA',           sector: 'Sjømat'    },
-  { ticker: 'DNB',   apiTicker: 'DNB.OL',  name: 'DNB Bank ASA',       sector: 'Finans'    },
+  { ticker: 'NVDA',  apiTicker: 'NVDA',    name: 'NVIDIA Corporation',         sector: 'Teknologi' },
+  { ticker: 'AAPL',  apiTicker: 'AAPL',    name: 'Apple Inc.',                 sector: 'Teknologi' },
+  { ticker: 'EQNR',  apiTicker: 'EQNR.OL', name: 'Equinor ASA',               sector: 'Energi'    },
+  { ticker: 'EUNL',  apiTicker: 'EUNL.DE', name: 'iShares MSCI World (EUNL)',  sector: 'Global'    },
+  { ticker: 'QQQ',   apiTicker: 'QQQ',     name: 'Nasdaq 100 ETF',             sector: 'Teknologi' },
+  { ticker: 'EEM',   apiTicker: 'EEM',     name: 'iShares Emerging Markets',   sector: 'EM'        },
+  { ticker: 'IUSN',  apiTicker: 'IUSN.DE', name: 'iShares World Small Cap',    sector: 'Small Cap' },
+  { ticker: 'DNB',   apiTicker: 'DNB.OL',  name: 'DNB Bank ASA',               sector: 'Finans'    },
+  { ticker: 'MOWI',  apiTicker: 'MOWI.OL', name: 'Mowi ASA',                   sector: 'Sjømat'    },
 ]
 
 const aiAnalysis = {
+  EUNL: {
+    recommendation: 'HOLD', targetPrice: null, stopLoss: null, confidence: 70,
+    summary: 'iShares MSCI World gir bred global eksponering mot ca. 1600 selskaper i utviklede markeder. Proxy for Nordnet Global-fond. Historisk sterk langsiktig avkastning.',
+    risks: ['Valutarisiko (EUR/NOK)', 'Konsentrasjonsrisiko mot USA (~65%)', 'Høy verdsettelse i tech-segmentet'],
+    catalysts: ['Global vekst', 'Svakere USD', 'Rentefall i Europa'],
+    rsi: 55, macd: 'Nøytral', bollinger: 'Midtpunkt', pe: 18.4, pb: 3.1, roe: 17.2,
+  },
+  QQQ: {
+    recommendation: 'HOLD', targetPrice: null, stopLoss: null, confidence: 68,
+    summary: 'Nasdaq 100 ETF gir eksponering mot de 100 største ikke-finansielle selskapene på Nasdaq. Proxy for Nordnet Teknologi. Tung tech-konsentrasjon.',
+    risks: ['Høy konsentrasjon i tech', 'Rentefølsom verdsettelse', 'Regulatorisk risiko AI-sektoren'],
+    catalysts: ['AI-boom fortsetter', 'Sterk inntjening tech-giganter', 'Rentefall'],
+    rsi: 62, macd: 'Bullish', bollinger: 'Øvre halvdel', pe: 32.5, pb: 7.8, roe: 24.3,
+  },
+  EEM: {
+    recommendation: 'KJØP', targetPrice: null, stopLoss: null, confidence: 58,
+    summary: 'iShares Emerging Markets ETF dekker vekstmarkeder inkl. Kina, India, Taiwan. Proxy for Nordnet Emerging Markets. Lav verdsettelse men høy geopolitisk risiko.',
+    risks: ['Kina-risiko', 'USD-styrke', 'Geopolitisk ustabilitet'],
+    catalysts: ['Kinesisk stimulans', 'India-vekst', 'Råvareoppgang'],
+    rsi: 48, macd: 'Nøytral', bollinger: 'Nedre halvdel', pe: 12.1, pb: 1.6, roe: 13.8,
+  },
+  IUSN: {
+    recommendation: 'HOLD', targetPrice: null, stopLoss: null, confidence: 62,
+    summary: 'iShares MSCI World Small Cap gir eksponering mot ca. 3400 small cap-selskaper globalt. Proxy for KLP Small Cap. Historisk meravkastning vs large cap på lang sikt.',
+    risks: ['Mer konjunkturfølsom enn large cap', 'Lavere likviditet', 'EUR/NOK valutarisiko'],
+    catalysts: ['Rentefall favoriserer small cap', 'M&A-aktivitet', 'Verdiaksjer comeback'],
+    rsi: 52, macd: 'Nøytral', bollinger: 'Midtpunkt', pe: 14.8, pb: 1.9, roe: 12.7,
+  },
   NVDA: {
     recommendation: 'KJØP', targetPrice: 950, stopLoss: 820, confidence: 82,
     summary: 'NVIDIA holder seg over alle viktige glidende gjennomsnitt med sterk volumbekreftelse. AI-chipetterspørselen fortsetter å overgå tilbudet. Teknisk oppsett er bullish med trendlinje-støtte.',

@@ -4,11 +4,13 @@ const AV_KEY  = import.meta.env.VITE_ALPHA_VANTAGE_KEY
 
 const FMP_BASE = 'https://financialmodelingprep.com/stable'
 const AV_BASE  = 'https://www.alphavantage.co/query'
-const NB_BASE  = 'https://data.norges-bank.no/api/data'
-const YF_BASE  = 'https://query1.finance.yahoo.com/v8/finance/chart'
+const PROXY    = 'https://corsproxy.io/?'
+// CORS proxy wraps Yahoo Finance and Norges Bank
+const YF_BASE  = `${PROXY}https://query1.finance.yahoo.com/v8/finance/chart`
+const NB_URL   = `${PROXY}https://data.norges-bank.no/api/data/EXR/B.USD+EUR+GBP.NOK.SP?format=sdmx-json`
 
-// .OL tickers go to Yahoo Finance (FMP returns 402 for Oslo Bors on free plan)
-const isOslo = ticker => ticker.endsWith('.OL')
+// Non-US exchange tickers (any suffix like .OL .DE .L .PA etc.) → Yahoo Finance
+const isNonUS = ticker => /\.(OL|DE|L|PA|AS|MI|ST|HE|CO)$/.test(ticker)
 
 // ─── Yahoo Finance ─────────────────────────────────────────────────────────────
 async function yfGet(symbol, params = {}) {
@@ -192,7 +194,7 @@ async function fetchSingleQuote(apiTicker) {
 export async function fetchQuotes(tickers) {
   const results = await Promise.all(tickers.map(async t => {
     try {
-      if (isOslo(t)) {
+      if (isNonUS(t)) {
         const q = await fetchYahooQuote(t)
         return q ? [q] : []
       }
@@ -232,7 +234,7 @@ async function fetchHistoricalFMP(symbol, limit) {
 
 export async function fetchHistorical(ticker, limit = 30) {
   // .OL stocks → Yahoo Finance directly (FMP gives 402)
-  if (isOslo(ticker)) return fetchYahooHistorical(ticker)
+  if (isNonUS(ticker)) return fetchYahooHistorical(ticker)
 
   // US stocks → try FMP first; fall back to Yahoo if FMP historical needs paid plan
   const fmpRows = await fetchHistoricalFMP(ticker, limit)
@@ -276,9 +278,9 @@ export async function fetchIPOCalendar(from, to) {
   return Array.isArray(data) ? data : []
 }
 
-// ─── Norges Bank exchange rates ───────────────────────────────────────────────
+// ─── Norges Bank exchange rates (via CORS proxy) ─────────────────────────────
 export async function fetchNOKRates() {
-  const url = `${NB_BASE}/EXR/B.USD+EUR+GBP.NOK.SP?format=sdmx-json`
+  const url = NB_URL
   console.log('[NB] Fetching NOK rates →', url)
   const res = await fetch(url)
   if (!res.ok) throw new Error(`Norges Bank HTTP ${res.status}`)
