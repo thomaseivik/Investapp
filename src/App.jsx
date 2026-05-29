@@ -4,6 +4,7 @@ import Header from './components/Layout/Header'
 import Dashboard from './pages/Dashboard'
 import NewsAnalysis from './pages/NewsAnalysis'
 import StockAnalysis from './pages/StockAnalysis'
+import EconomicCalendar from './pages/EconomicCalendar'
 import './index.css'
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/news" element={<NewsAnalysis />} />
               <Route path="/stocks" element={<StockAnalysis />} />
+              <Route path="/calendar" element={<EconomicCalendar />} />
             </Routes>
           </main>
         </div>
